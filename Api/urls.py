@@ -19,6 +19,7 @@ from . import views
 
 urlpatterns = [
     path('down/', views.download),
+    path('down/del/<str:pk>/', views.download_del),
     path('history/', views.history),
     path('history/<str:pk>/', views.history_id),
     #    path('admin/', admin.site.urls),

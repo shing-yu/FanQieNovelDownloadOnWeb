@@ -1,7 +1,10 @@
 import re
 import json
+import time
 import requests
 from bs4 import BeautifulSoup
+import threading
+from .models import History
 
 
 class Fanqie:
@@ -63,8 +66,29 @@ def rename(name):
     return sanitized_path
 
 
-def download_novel(fanqie: object, mode):
-    if mode == 'txt':
-        pass
-    elif mode == 'epub':
-        pass
+class DownloadNovel(threading.Thread):
+    def __init__(self, fanqie: object, mode):
+        self.fanqie = fanqie
+        self.mode = mode
+        self._stop_flag = False
+        self._stop_event = threading.Event()
+        super().__init__()
+
+    def run(self) -> None:
+        history_entry = History.objects.get(book_id=self.fanqie.book_id)
+        for i in range(100):
+            if self._stop_event.is_set(): break
+            time.sleep(1)
+            if self._stop_event.is_set(): break
+            history_entry.percent += 1
+            history_entry.save()
+            print(history_entry.percent)
+        history_entry.delete()
+        print(self.fanqie)
+        if self.mode == 'txt':
+            print('txt模式')
+        elif self.mode == 'epub':
+            print('epub模式')
+
+    def stop(self):
+        self._stop_event.set()
