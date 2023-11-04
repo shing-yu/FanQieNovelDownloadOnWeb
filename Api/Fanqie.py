@@ -18,11 +18,14 @@ class Fanqie:
         "User-Agent": ua
     }
 
-    def __init__(self, url):
+    def __init__(self, url, mode):
         response = requests.get(url, headers=self.headers)
         self.url = url
+        self.mode = mode
         self.html = response.text
         self.book_id = re.search(r"/(\d+)", url).group(1)
+
+        self.obid = f'{self.book_id}-{self.mode}'
 
         self.soup = BeautifulSoup(self.html, "html.parser")
 
@@ -72,19 +75,122 @@ def rename(name):
 
 
 class DownloadNovel(threading.Thread):
-    def __init__(self, fanqie: Fanqie, mode):
+    def __init__(self, fanqie: Fanqie):
         self.fanqie = fanqie
-        self.mode = mode
         self._stop_flag = False
         self._stop_event = threading.Event()
         super().__init__()
 
     def run(self) -> None:
-        history_entry = History.objects.get(book_id=self.fanqie.book_id)
+        history_entry = History.objects.get(obid=self.fanqie.obid)
         print(self.fanqie)
-        if self.mode == 'txt':
+        if self.fanqie.mode == 'txt':
             print('txt模式')
-        elif self.mode == 'epub':
+
+            content = f"""{self.fanqie.title}
+            {self.fanqie.intro}
+            """
+            # 获取所有章节链接
+            chapters = self.fanqie.soup.find_all("div", class_="chapter-item")
+            start_index = 0
+
+            file_path = self.fanqie.title + ".txt"
+
+            # 获取章节数
+            chapters = self.fanqie.soup.find_all("div", class_="chapter-item")
+            chapter_num = len(chapters)
+            chapter_num_now = 0
+
+            try:
+                # 遍历每个章节链接
+                for chapter in chapters[start_index:]:
+                    if self._stop_event.is_set(): break
+                    time.sleep(0.25)
+                    if self._stop_event.is_set(): break
+                    # 获取章节标题
+                    chapter_title = chapter.find("a").get_text()
+
+                    # 获取章节网址
+                    chapter_url = urljoin(self.fanqie.url, chapter.find("a")["href"])
+
+                    # 获取章节 id
+                    chapter_id = re.search(r"/(\d+)", chapter_url).group(1)
+
+                    # 构造 api 网址
+                    api_url = (f"https://novel.snssdk.com/api/novel/book/reader/full/v1/?device_platform=android&"
+                               f"parent_enterfrom=novel_channel_search.tab.&aid=2329&platform_id=1&group_id="
+                               f"{chapter_id}&item_id={chapter_id}")
+
+                    # 尝试获取章节内容
+                    chapter_content = None
+                    retry_count = 1
+                    while retry_count < 4:  # 设置最大重试次数
+                        if self._stop_event.is_set(): break
+                        # 获取 api 响应
+                        api_response = requests.get(api_url, headers=self.fanqie.headers)
+
+                        # 解析 api 响应为 json 数据
+                        api_data = api_response.json()
+
+                        if "data" in api_data and "content" in api_data["data"]:
+                            chapter_content = api_data["data"]["content"]
+                            break  # 如果成功获取章节内容，跳出重试循环
+                        else:
+                            if retry_count == 1:
+                                print(f"{chapter_title} 获取失败，正在尝试重试...")
+                            print(f"第 ({retry_count}/3) 次重试获取章节内容")
+                            retry_count += 1  # 否则重试
+
+                    if retry_count == 4:
+                        print(f"无法获取章节内容: {chapter_title}，跳过。")
+                        continue  # 重试次数过多后，跳过当前章节
+
+                    # 提取文章标签中的文本
+                    chapter_text = re.search(r"<article>([\s\S]*?)</article>", chapter_content).group(1)
+
+                    # 将 <p> 标签替换为换行符
+                    chapter_text = re.sub(r"<p>", "\n", chapter_text)
+
+                    # 去除其他 html 标签
+                    chapter_text = re.sub(r"</?\w+>", "", chapter_text)
+
+                    chapter_text = fix_publisher(chapter_text)
+
+                    # 在小说内容字符串中添加章节标题和内容
+                    content += f"\n\n\n{chapter_title}\n{chapter_text}"
+
+                    # 打印进度信息
+                    print(f"已获取 {chapter_title}")
+                    chapter_num_now += 1
+                    history_entry.percent = round(
+                        (chapter_num_now / chapter_num) * 100, 2)
+                    history_entry.save()
+                    print(f'进度：{history_entry.percent}%')
+                # 根据编码转换小说内容字符串为二进制数据
+                data = content.encode('utf-8', errors='ignore')
+
+                # 保存文件
+                with open(file_path, "wb") as f:
+                    f.write(data)
+
+                # 打印完成信息
+                print(f"已保存{self.fanqie.title}.txt")
+
+            except BaseException as e:
+                # 捕获所有异常，及时保存文件
+                print(f"发生异常: \n{e}")
+                print("正在尝试保存文件...")
+                # 根据编码转换小说内容字符串为二进制数据
+                data = content.encode('utf-8', errors='ignore')
+
+                # 保存文件
+                with open(file_path, "wb") as f:
+                    f.write(data)
+
+                print("文件已保存！")
+                return
+
+        elif self.fanqie.mode == 'epub':
             print('epub模式')
 
             # 创建epub电子书
@@ -248,3 +354,17 @@ class DownloadNovel(threading.Thread):
 
     def stop(self):
         self._stop_event.set()
+
+
+def fix_publisher(text):
+    # 针对性去除所有 出版物 所携带的标签
+    text = re.sub(r'<p class=".*?">', '', text)
+    text = re.sub(r'<!--\?xml.*?>', '', text)
+    text = re.sub(r'<link .*?/>', '', text)
+    text = re.sub(r'<meta .*?/>', '', text)
+    text = re.sub(r'<h1 .*?>', '', text)
+    text = re.sub(r'<br/>', '', text)
+    text = re.sub(r'<!DOCTYPE html .*?>', '', text)
+    text = re.sub(r'<span .*?>', '', text)
+    text = re.sub(r'<html .*?>', '', text)
+    return text

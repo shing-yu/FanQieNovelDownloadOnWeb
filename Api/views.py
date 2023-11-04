@@ -20,19 +20,19 @@ def download(request):
             print(format_)
             book = []
             urls = list(set(urls))
-            [book.append(Fanqie(url)) for url in urls]
+            [book.append(Fanqie(url, format_)) for url in urls]
             for i in book:
                 try:
-                    history_ = History.objects.get(book_id=i.book_id)
-                    if history_.book_id == i.book_id:
+                    history_ = History.objects.get(book_id=i.obid)
+                    if history_.obid == i.obid:
                         print('重复提交！')
                         continue
                 except Exception as e:
                     pass
-                b = History(book_id=i.book_id, file_name=f'{i.title}.{format_}', percent=0)
+                b = History(book_id=i.book_id, obid=i.obid, file_name=f'{i.title}.{format_}', percent=0)
                 b.save()
-                d = DownloadNovel(i, format_)
-                download_object.append({'book_id': i.book_id, 'obj': d})
+                d = DownloadNovel(i)
+                download_object.append({'obid': i.obid, 'obj': d})
                 d.start()
             # 在这里处理URLs，您可以执行下载操作或其他所需的操作
             response_data = {'message': 'Download request received', 'urls': urls}
@@ -46,9 +46,9 @@ def download(request):
 def download_del(request, pk):
     global download_object
     try:
-        history_ = History.objects.get(book_id=pk)
+        history_ = History.objects.get(obid=pk)
         for i in download_object:
-            if i['book_id'] == pk:
+            if i['obid'] == pk:
                 i['obj'].stop()
         history_.delete()
         response_data = {'status': 'ok'}
@@ -68,12 +68,13 @@ def history(request):
         print(record.file_name)
         print(record.percent)
         response_data['history'].append({'book_id': record.book_id,
+                                         'obid': record.obid,
                                          'file_name': record.file_name,
                                          'percent': record.percent})
     return JsonResponse(response_data, status=200, headers={'Access-Control-Allow-Origin': '*'})
 
 
 def history_id(request, pk):
-    history_entry = History.objects.get(book_id=pk)
+    history_entry = History.objects.get(obid=pk)
     print(history_entry.percent)
     return JsonResponse({'percent': history_entry.percent}, status=200, headers={'Access-Control-Allow-Origin': '*'})

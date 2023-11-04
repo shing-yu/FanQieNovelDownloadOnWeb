@@ -1,0 +1,4 @@
+Django
+requests
+beautifulsoup4
+EbookLib
