@@ -1,8 +1,12 @@
 import re
+import os
 import json
 import time
+from urllib.parse import urljoin
+
 import requests
 from bs4 import BeautifulSoup
+from ebooklib import epub
 import threading
 from .models import History
 
@@ -16,6 +20,7 @@ class Fanqie:
 
     def __init__(self, url):
         response = requests.get(url, headers=self.headers)
+        self.url = url
         self.html = response.text
         self.book_id = re.search(r"/(\d+)", url).group(1)
 
@@ -67,7 +72,7 @@ def rename(name):
 
 
 class DownloadNovel(threading.Thread):
-    def __init__(self, fanqie: object, mode):
+    def __init__(self, fanqie: Fanqie, mode):
         self.fanqie = fanqie
         self.mode = mode
         self._stop_flag = False
@@ -76,19 +81,170 @@ class DownloadNovel(threading.Thread):
 
     def run(self) -> None:
         history_entry = History.objects.get(book_id=self.fanqie.book_id)
-        for i in range(100):
-            if self._stop_event.is_set(): break
-            time.sleep(1)
-            if self._stop_event.is_set(): break
-            history_entry.percent += 1
-            history_entry.save()
-            print(history_entry.percent)
-        history_entry.delete()
         print(self.fanqie)
         if self.mode == 'txt':
             print('txt模式')
         elif self.mode == 'epub':
             print('epub模式')
+
+            # 创建epub电子书
+            book = epub.EpubBook()
+
+            # 下载封面
+            response = requests.get(self.fanqie.img_url)
+            # 获取图像的内容
+            img_data = response.content
+
+            # 保存图像到本地文件
+            with open("cover.jpg", "wb") as f:
+                f.write(img_data)
+
+            # 创建一个封面图片
+            book.set_cover("image.jpg", open('cover.jpg', 'rb').read())
+
+            # 删除封面
+            os.remove('cover.jpg')
+
+            # 设置书的元数据
+            book.set_title(self.fanqie.title)
+            book.set_language('zh-CN')
+            book.add_author(self.fanqie.author_name)
+            book.add_metadata('DC', 'description', self.fanqie.intro)
+
+            # 获取卷标
+            page_directory_content = self.fanqie.soup.find('div', class_='page-directory-content')
+            nested_divs = page_directory_content.find_all('div', recursive=False)
+
+            # intro chapter
+            intro_e = epub.EpubHtml(title='Introduction', file_name='intro.xhtml', lang='hr')
+            intro_e.content = (f'<html><head></head><body>'
+                               f'<img src="image.jpg" alt="Cover Image"/>'
+                               f'<h1>{self.fanqie.title}</h1>'
+                               f'<p>{self.fanqie.intro}</p>'
+                               f'</body></html>')
+            book.add_item(intro_e)
+
+            # 创建索引
+            book.toc = (epub.Link('intro.xhtml', '简介', 'intro'),)
+            book.spine = ['nav', intro_e]
+
+            # 获取章节数
+            chapters = self.fanqie.soup.find_all("div", class_="chapter-item")
+            chapter_num = len(chapters)
+            chapter_num_now = 0
+
+            try:
+                volume_id = 0
+
+                # 遍历每个卷
+                for div in nested_divs:
+                    if self._stop_event.is_set(): break
+                    first_chapter = None
+                    volume_id += 1
+                    volume_div = div.find('div', class_='volume')
+                    # 提取 "卷名" 文本
+                    volume_title = volume_div.text
+                    print(volume_title)
+                    chapters = div.find_all("div", class_="chapter-item")
+                    start_index = None
+                    for i, chapter in enumerate(chapters):
+                        if self._stop_event.is_set(): break
+                        chapter_url_tmp = urljoin(self.fanqie.url, chapter.find("a")["href"])
+                        chapter_id_tmp = re.search(r"/(\d+)", chapter_url_tmp).group(1)
+                        if chapter_id_tmp == '0':  # epub模式不支持起始章节
+                            start_index = i
+
+                    # 定义目录索引
+                    toc_index = ()
+
+                    chapter_id_name = 0
+
+                    # 遍历每个章节链接
+                    for chapter in chapters[start_index:]:
+                        chapter_id_name += 1
+                        if self._stop_event.is_set(): break
+                        time.sleep(0.25)
+                        if self._stop_event.is_set(): break
+                        # 获取章节标题
+                        chapter_title = chapter.find("a").get_text()
+
+                        # 获取章节网址
+                        chapter_url = urljoin(self.fanqie.url, chapter.find("a")["href"])
+
+                        # 获取章节 id
+                        chapter_id = re.search(r"/(\d+)", chapter_url).group(1)
+
+                        # 构造 api 网址
+                        api_url = (f"https://novel.snssdk.com/api/novel/book/reader/full/v1/?device_platform=android&"
+                                   f"parent_enterfrom=novel_channel_search.tab.&aid=2329&platform_id=1&group_id="
+                                   f"{chapter_id}&item_id={chapter_id}")
+
+                        # 尝试获取章节内容
+                        chapter_content = None
+                        retry_count = 1
+                        while retry_count < 4:  # 设置最大重试次数
+                            if self._stop_event.is_set(): break
+                            # 获取 api 响应
+                            api_response = requests.get(api_url, headers=self.fanqie.headers)
+
+                            # 解析 api 响应为 json 数据
+                            api_data = api_response.json()
+
+                            if "data" in api_data and "content" in api_data["data"]:
+                                chapter_content = api_data["data"]["content"]
+                                break  # 如果成功获取章节内容，跳出重试循环
+                            else:
+                                if retry_count == 1:
+                                    print(f"{chapter_title} 获取失败，正在尝试重试...")
+                                print(f"第 ({retry_count}/3) 次重试获取章节内容")
+                                retry_count += 1  # 否则重试
+
+                        if retry_count == 4:
+                            print(f"无法获取章节内容: {chapter_title}，跳过。")
+                            continue  # 重试次数过多后，跳过当前章节
+
+                        # 提取文章标签中的文本
+                        chapter_text = re.search(r"<article>([\s\S]*?)</article>", chapter_content).group(1)
+
+                        # 在小说内容字符串中添加章节标题和内容
+                        text = epub.EpubHtml(title=chapter_title,
+                                             file_name=f'chapter_{volume_id}_{chapter_id_name}.xhtml')
+                        text.content = chapter_text
+
+                        toc_index = toc_index + (text,)
+                        book.spine.append(text)
+
+                        # 寻找第一章
+                        if chapter_id_name == 1:
+                            first_chapter = f'chapter_{volume_id}_{chapter_id_name}.xhtml'
+
+                        # 加入epub
+                        book.add_item(text)
+
+                        # 打印进度信息
+                        print(f"已获取 {chapter_title}")
+                        chapter_num_now += 1
+                        history_entry.percent = round(
+                            (chapter_num_now / chapter_num) * 100, 2)
+                        history_entry.save()
+                        print(f'进度：{history_entry.percent}%')
+                    # 加入书籍索引
+                    book.toc = book.toc + ((epub.Section(volume_title, href=first_chapter),
+                                            toc_index,),)
+            except BaseException as e:
+                # 捕获所有异常，及时保存文件
+                print(f"发生异常: \n{e}")
+                return
+
+            # 添加 navigation 文件
+            book.add_item(epub.EpubNcx())
+            book.add_item(epub.EpubNav())
+
+            file_path = self.fanqie.title + ".epub"
+
+            epub.write_epub(file_path, book, {})
+
+            print("文件已保存！")
 
     def stop(self):
         self._stop_event.set()
