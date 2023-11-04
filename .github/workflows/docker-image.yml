@@ -23,8 +23,13 @@ jobs:
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag fanqie-novel-download-on-web:$(date +%s)
 
-    - name: Log in to Docker Hub with Token
-      run: docker login -u "$DOCKERHUB_USER" --password-stdin < <(echo "$DOCKERHUB_TOKEN")
+    - name: Login to Ali Docker
+      uses: docker/login-action@v1
+      # 配置登录信息，secrets 变量在 github settings -> secrets 中设置
+      with:
+        # registry: ${{ secrets.ALI_DOCKER_HUB_REGISTRY }}
+        username: ${{ secrets.DOCKERHUB_USER }}
+        password: ${{ secrets.DOCKERHUB_PWD }}
     
     - name: Push Docker image to a container registry
       run:
