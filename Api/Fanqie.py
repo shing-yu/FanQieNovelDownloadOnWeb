@@ -95,6 +95,7 @@ class DownloadNovel(threading.Thread):
             start_index = 0
 
             file_path = self.fanqie.title + ".txt"
+            file_path = os.path.join('/root/alist/book/books', file_path)
 
             # 获取章节数
             chapters = self.fanqie.soup.find_all("div", class_="chapter-item")
@@ -347,6 +348,7 @@ class DownloadNovel(threading.Thread):
             book.add_item(epub.EpubNav())
 
             file_path = self.fanqie.title + ".epub"
+            file_path = os.path.join('/root/alist/book/books', file_path)
 
             epub.write_epub(file_path, book, {})
 
