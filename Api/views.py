@@ -26,7 +26,7 @@ def download(request):
                     history_ = History.objects.get(book_id=i.book_id)
                     if history_.book_id == i.book_id:
                         print('重复提交！')
-                        break
+                        continue
                 except Exception as e:
                     pass
                 b = History(book_id=i.book_id, file_name=f'{i.title}.{format_}', percent=0)
