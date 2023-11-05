@@ -81,17 +81,12 @@ class DownloadNovel(threading.Thread):
         self._stop_flag = False
         self._stop_event = threading.Event()
         self.is_webdav = os.environ.get('IS_WEBDAV')
-        print(f'test: {self.is_webdav}, {type(self.is_webdav)}')
         if self.is_webdav:
-            print('is_webdav ok')
-        self.webdav_username = os.environ.get('WEBDAV_USERNAME')
-        self.webdav_pwd = os.environ.get('WEBDAV_PWD')
-        print(f'环境变量测试：\n'
-              f'user_name:{self.webdav_username}\n'
-              f'pwd:{self.webdav_pwd}')
-        self.webdav = Client(base_url='http://self.flystudiokey.cn:5244/dav/',
-                             auth=(self.webdav_username, self.webdav_pwd))
-        print('webdav加载成功')
+            self.webdav_username = os.environ.get('WEBDAV_USERNAME')
+            self.webdav_pwd = os.environ.get('WEBDAV_PWD')
+            self.webdav = Client(base_url='http://self.flystudiokey.cn:5244/dav/',
+                                 auth=(self.webdav_username, self.webdav_pwd))
+            print('webdav加载成功')
         super().__init__()
 
     def run(self) -> None:
@@ -191,9 +186,11 @@ class DownloadNovel(threading.Thread):
 
                 file_path = os.path.join('/root/alist/book/books', file_name)
                 file_path = Path(file_path)
-                self.webdav.upload_file(from_path=file_path,
-                                        to_path=os.path.join('/public', file_name),
-                                        overwrite=True)
+                if self.is_webdav:
+                    self.webdav.upload_file(from_path=file_path,
+                                            to_path=os.path.join('/public', file_name),
+                                            overwrite=True)
+                    print("webdav保存成功")
 
                 # 打印完成信息
                 print(f"已保存{self.fanqie.title}.txt")
@@ -378,9 +375,11 @@ class DownloadNovel(threading.Thread):
 
             epub.write_epub(file_path, book, {})
             file_path = Path(file_path)
-            self.webdav.upload_file(from_path=file_path,
-                                    to_path=os.path.join('/public', file_name),
-                                    overwrite=True)
+            if self.is_webdav:
+                self.webdav.upload_file(from_path=file_path,
+                                        to_path=os.path.join('/public', file_name),
+                                        overwrite=True)
+                print("webdav保存成功")
 
             print("文件已保存！")
 
