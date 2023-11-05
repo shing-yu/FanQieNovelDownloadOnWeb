@@ -3,4 +3,4 @@ requests
 beautifulsoup4
 EbookLib
 webdav4
-webdavclient3
+easywebdav

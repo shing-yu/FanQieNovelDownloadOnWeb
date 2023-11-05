@@ -1,11 +1,6 @@
-import os
-import shutil
+from easywebdav import Client
 
-os.system('cnpm run build')
-os.remove('D:\\bc\\python\\FanQieNovelDownloadOnWeb')
-shutil.copytree('D:\\bc\\html\\DownloadFanqiePassageInWeb\\dist\\assets',
-                'D:\\bc\\python\\FanQieNovelDownloadOnWeb')
-shutil.copytree('D:\\bc\\html\\DownloadFanqiePassageInWeb\\dist\\history',
-                'D:\\bc\\python\\FanQieNovelDownloadOnWeb\\templates')
-shutil.copy('D:\\bc\\html\\DownloadFanqiePassageInWeb\\dist\\history',
-            'D:\\bc\\python\\FanQieNovelDownloadOnWeb\\templates')
+
+client = Client("pan.xingyv.site", port=443, username='weiwei', password='gsw091005', path='dav', protocol='https')
+
+client.ls("/")
