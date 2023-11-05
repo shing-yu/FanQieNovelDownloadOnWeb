@@ -79,11 +79,11 @@ class DownloadNovel(threading.Thread):
         self.fanqie = fanqie
         self._stop_flag = False
         self._stop_event = threading.Event()
-        if os.environ.get('IS_WEBDAV'):
-            self.webdav_username = os.environ.get('WEBDAV_USERNAME')
-            self.webdav_pwd = os.environ.get('WEBDAV_PWD')
-            self.webdav = Client(base_url='http://self.flystudiokey.cn:8000/dav/',
-                                 auth=(self.webdav_username, self.webdav_pwd))
+        self.webdav_username = os.environ.get('WEBDAV_USERNAME')
+        self.webdav_pwd = os.environ.get('WEBDAV_PWD')
+        self.webdav = Client(base_url='http://self.flystudiokey.cn:5244/dav/',
+                             auth=(self.webdav_username, self.webdav_pwd))
+        print('webdav加载成功')
         super().__init__()
 
     def run(self) -> None:
@@ -99,8 +99,8 @@ class DownloadNovel(threading.Thread):
             chapters = self.fanqie.soup.find_all("div", class_="chapter-item")
             start_index = 0
 
-            file_path = self.fanqie.title + ".txt"
-            file_path = os.path.join('/root/alist/book/books', file_path)
+            file_name = self.fanqie.title + ".txt"
+            file_path = os.path.join('/root/alist/book/books', file_name)
 
             # 获取章节数
             chapters = self.fanqie.soup.find_all("div", class_="chapter-item")
@@ -181,6 +181,8 @@ class DownloadNovel(threading.Thread):
 
                 # 打印完成信息
                 print(f"已保存{self.fanqie.title}.txt")
+                file_path = os.path.join('./', file_name)
+                self.webdav.upload_file(from_path=file_path, to_path=os.path.join('/public', file_name))
 
             except BaseException as e:
                 # 捕获所有异常，及时保存文件
@@ -354,10 +356,10 @@ class DownloadNovel(threading.Thread):
 
             file_name = self.fanqie.title + ".epub"
             file_path = os.path.join('/root/alist/book/books', file_name)
+            file_path = os.path.join('./', file_name)
 
             epub.write_epub(file_path, book, {})
-            if os.environ.get('IS_WEBDAV'):
-                self.webdav.upload_file(from_path=file_path, to_path=os.path.join(''))
+            self.webdav.upload_file(from_path=file_path, to_path=os.path.join('/public', file_name))
 
             print("文件已保存！")
 

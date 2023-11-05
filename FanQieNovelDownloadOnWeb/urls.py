@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.views.generic.base import RedirectView
 from django.urls import path, include
 from . import views
 
@@ -21,4 +22,5 @@ urlpatterns = [
     path('api/', include('Api.urls')),
     path('', views.index),
     path('history/', views.history),
+    path('favicon.ico', RedirectView.as_view(url='/assets/favicon.ico')),
 ]
