@@ -18,12 +18,28 @@ python manage.py migrate
 python manage.py runserver 0.0.0.0:8000
 ```
 ### docker运行
+如果您需要使用docker运行请使用以下命令
 ```shell
 docker run --name="fanqie"\
  -v /root/alist/book/books:/root/alist/book/books\
  -p 8000:8000\
  -d weiweicool/fanqie-novel-download-on-web
+``` 
+
+如果您**想要**开启**WebDav**模式，请设置环境变量`IS_WEBDAV=True`  
+以**WebDav**模式运行时，应用会将下载完成的小说自动上传至webdav服务器中的/public目录下  
+请将`{user_name}`和`{pwd}`替换为您的webdav账号密码  
+**注意！如果您的webdav服务器为纯ipv6访问，请您一定要将docker设置为允许ipv6(默认不支持)**
+```shell
+docker run --name="fanqie"\
+ -v /root/alist/book/books:/root/alist/book/books\
+ -p 8000:8000\
+ -e WEBDAV_USERNAME={user_name}\
+ -e WEBDAV_PWD={pwd}\
+ -e IS_WEBDAV=True\
+ -d weiweicool/fanqie-novel-download-on-web
 ```
+
 
 ## 开源与许可证
 此项目使用来自 @xing-yv的[fanqie-novel-download](https://github.com/xing-yv/fanqie-novel-download)的源代码  
