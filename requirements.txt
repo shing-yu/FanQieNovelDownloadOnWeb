@@ -2,3 +2,4 @@ Django
 requests
 beautifulsoup4
 EbookLib
+webdav4

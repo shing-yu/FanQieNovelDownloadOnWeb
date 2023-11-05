@@ -21,11 +21,13 @@ def download(request):
             book = []
             urls = list(set(urls))
             [book.append(Fanqie(url, format_)) for url in urls]
+            return_url = []
             for i in book:
                 try:
-                    history_ = History.objects.get(book_id=i.obid)
+                    history_ = History.objects.get(obid=i.obid)
                     if history_.obid == i.obid:
                         print('重复提交！')
+                        return_url.append(i.url)
                         continue
                 except Exception as e:
                     pass
@@ -35,12 +37,12 @@ def download(request):
                 download_object.append({'obid': i.obid, 'obj': d})
                 d.start()
             # 在这里处理URLs，您可以执行下载操作或其他所需的操作
-            response_data = {'message': 'Download request received', 'urls': urls}
-            return JsonResponse(response_data, status=200)
+            response_data = {'message': 'Download request received', 'urls': urls, 'return': return_url}
+            return JsonResponse(response_data, status=200, headers={'Access-Control-Allow-Origin': '*'})
         except Exception as e:
             print(e)
-            return JsonResponse({'error': str(e)}, status=500)
-    return JsonResponse({'error': 'Invalid request method'}, status=405)
+            return JsonResponse({'error': str(e)}, status=500, headers={'Access-Control-Allow-Origin': '*'})
+    return JsonResponse({'error': 'Invalid request method'}, status=405, headers={'Access-Control-Allow-Origin': '*'})
 
 
 def download_del(request, pk):

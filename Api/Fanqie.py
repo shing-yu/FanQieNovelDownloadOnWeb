@@ -3,7 +3,7 @@ import os
 import json
 import time
 from urllib.parse import urljoin
-
+from webdav4.client import Client
 import requests
 from bs4 import BeautifulSoup
 from ebooklib import epub
@@ -79,6 +79,11 @@ class DownloadNovel(threading.Thread):
         self.fanqie = fanqie
         self._stop_flag = False
         self._stop_event = threading.Event()
+        if os.environ.get('IS_WEBDAV'):
+            self.webdav_username = os.environ.get('WEBDAV_USERNAME')
+            self.webdav_pwd = os.environ.get('WEBDAV_PWD')
+            self.webdav = Client(base_url='http://self.flystudiokey.cn:8000/dav/',
+                                 auth=(self.webdav_username, self.webdav_pwd))
         super().__init__()
 
     def run(self) -> None:
@@ -347,10 +352,12 @@ class DownloadNovel(threading.Thread):
             book.add_item(epub.EpubNcx())
             book.add_item(epub.EpubNav())
 
-            file_path = self.fanqie.title + ".epub"
-            file_path = os.path.join('/root/alist/book/books', file_path)
+            file_name = self.fanqie.title + ".epub"
+            file_path = os.path.join('/root/alist/book/books', file_name)
 
             epub.write_epub(file_path, book, {})
+            if os.environ.get('IS_WEBDAV'):
+                self.webdav.upload_file(from_path=file_path, to_path=os.path.join(''))
 
             print("文件已保存！")
 

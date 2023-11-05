@@ -1,28 +1,11 @@
-import threading
-import time
+import os
+import shutil
 
-
-class DownloadNovel(threading.Thread):
-    def __init__(self):
-        self._stop_event = threading.Event()
-        super().__init__()
-
-    def run(self) -> None:
-        a = 0
-        for i in range(100):
-            if self._stop_event.is_set(): break
-            time.sleep(1)
-            if self._stop_event.is_set(): break
-            a += 1
-            print(a)
-
-    def stop(self):
-        self._stop_event.set()
-
-
-a = DownloadNovel()
-a.start()
-print('a')
-time.sleep(5)
-a.stop()
-print('b')
+os.system('cnpm run build')
+os.remove('D:\\bc\\python\\FanQieNovelDownloadOnWeb')
+shutil.copytree('D:\\bc\\html\\DownloadFanqiePassageInWeb\\dist\\assets',
+                'D:\\bc\\python\\FanQieNovelDownloadOnWeb')
+shutil.copytree('D:\\bc\\html\\DownloadFanqiePassageInWeb\\dist\\history',
+                'D:\\bc\\python\\FanQieNovelDownloadOnWeb\\templates')
+shutil.copy('D:\\bc\\html\\DownloadFanqiePassageInWeb\\dist\\history',
+            'D:\\bc\\python\\FanQieNovelDownloadOnWeb\\templates')
