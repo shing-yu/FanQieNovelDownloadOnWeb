@@ -7,8 +7,6 @@ on:
   pull_request:
     tags:
       - '*'
-    branches:
-      - master
 
 jobs:
 
