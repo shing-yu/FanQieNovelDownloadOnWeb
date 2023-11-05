@@ -1,3 +1,7 @@
 # created by virtualenv automatically
 .idea
 db.sqlite3
+venv/
+Api/__pycache__/
+Api/migrations/__pycache__/
+FanQieNovelDownloadOnWeb/__pycache__/
