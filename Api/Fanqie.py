@@ -80,13 +80,15 @@ class DownloadNovel(threading.Thread):
         self.fanqie = fanqie
         self._stop_flag = False
         self._stop_event = threading.Event()
+        self.is_webdav = os.environ.get('IS_WEBDAV')
+        print(f'test: {self.is_webdav}, {type(self.is_webdav)}')
+        if self.is_webdav:
+            print('is_webdav ok')
         self.webdav_username = os.environ.get('WEBDAV_USERNAME')
         self.webdav_pwd = os.environ.get('WEBDAV_PWD')
         print(f'环境变量测试：\n'
               f'user_name:{self.webdav_username}\n'
               f'pwd:{self.webdav_pwd}')
-        self.webdav_username = 'test'
-        self.webdav_pwd = 'test123'
         self.webdav = Client(base_url='http://self.flystudiokey.cn:5244/dav/',
                              auth=(self.webdav_username, self.webdav_pwd))
         print('webdav加载成功')
