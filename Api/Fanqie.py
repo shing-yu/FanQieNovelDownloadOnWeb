@@ -82,6 +82,11 @@ class DownloadNovel(threading.Thread):
         self._stop_event = threading.Event()
         self.webdav_username = os.environ.get('WEBDAV_USERNAME')
         self.webdav_pwd = os.environ.get('WEBDAV_PWD')
+        print(f'环境变量测试：\n'
+              f'user_name:{self.webdav_username}\n'
+              f'pwd:{self.webdav_pwd}')
+        self.webdav_username = 'test'
+        self.webdav_pwd = 'test123'
         self.webdav = Client(base_url='http://self.flystudiokey.cn:5244/dav/',
                              auth=(self.webdav_username, self.webdav_pwd))
         print('webdav加载成功')
@@ -182,11 +187,14 @@ class DownloadNovel(threading.Thread):
                 with open(file_path, "wb") as f:
                     f.write(data)
 
+                file_path = os.path.join('/root/alist/book/books', file_name)
+                file_path = Path(file_path)
+                self.webdav.upload_file(from_path=file_path,
+                                        to_path=os.path.join('/public', file_name),
+                                        overwrite=True)
+
                 # 打印完成信息
                 print(f"已保存{self.fanqie.title}.txt")
-                file_path = os.path.join('./', file_name)
-                file_path = Path(file_path)
-                self.webdav.upload_file(from_path=file_path, to_path=os.path.join('/public', file_name))
 
             except BaseException as e:
                 # 捕获所有异常，及时保存文件
@@ -364,11 +372,13 @@ class DownloadNovel(threading.Thread):
             book.add_item(epub.EpubNav())
 
             file_name = self.fanqie.title + ".epub"
-            file_path = os.path.join('./', file_name)
+            file_path = os.path.join('/root/alist/book/books', file_name)
 
             epub.write_epub(file_path, book, {})
             file_path = Path(file_path)
-            self.webdav.upload_file(from_path=file_path, to_path=os.path.join('/public', file_name))
+            self.webdav.upload_file(from_path=file_path,
+                                    to_path=os.path.join('/public', file_name),
+                                    overwrite=True)
 
             print("文件已保存！")
 

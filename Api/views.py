@@ -23,14 +23,15 @@ def download(request):
             [book.append(Fanqie(url, format_)) for url in urls]
             return_url = []
             for i in book:
+                print(i)
                 try:
                     history_ = History.objects.get(obid=i.obid)
                     if history_.obid == i.obid:
                         print('重复提交！')
                         return_url.append(i.url)
                         continue
-                except Exception:
-                    pass
+                except Exception as e:
+                    print(e)
                 b = History(book_id=i.book_id, obid=i.obid, file_name=f'{i.title}.{format_}', percent=0)
                 b.save()
                 d = DownloadNovel(i)
