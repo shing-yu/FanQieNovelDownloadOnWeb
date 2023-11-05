@@ -84,7 +84,8 @@ class DownloadNovel(threading.Thread):
         if self.is_webdav:
             self.webdav_username = os.environ.get('WEBDAV_USERNAME')
             self.webdav_pwd = os.environ.get('WEBDAV_PWD')
-            self.webdav = Client(base_url='http://self.flystudiokey.cn:5244/dav/',
+            self.webdav_url = os.environ.get('WEBDAV_URL')
+            self.webdav = Client(base_url=self.webdav_url,
                                  auth=(self.webdav_username, self.webdav_pwd))
             print('webdav加载成功')
         super().__init__()
