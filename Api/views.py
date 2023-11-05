@@ -29,7 +29,7 @@ def download(request):
                         print('重复提交！')
                         return_url.append(i.url)
                         continue
-                except Exception as e:
+                except Exception:
                     pass
                 b = History(book_id=i.book_id, obid=i.obid, file_name=f'{i.title}.{format_}', percent=0)
                 b.save()

@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from ebooklib import epub
 import threading
 from .models import History
+from pathlib import Path
 
 
 class Fanqie:
@@ -96,7 +97,6 @@ class DownloadNovel(threading.Thread):
             {self.fanqie.intro}
             """
             # 获取所有章节链接
-            chapters = self.fanqie.soup.find_all("div", class_="chapter-item")
             start_index = 0
 
             file_name = self.fanqie.title + ".txt"
@@ -110,9 +110,11 @@ class DownloadNovel(threading.Thread):
             try:
                 # 遍历每个章节链接
                 for chapter in chapters[start_index:]:
-                    if self._stop_event.is_set(): break
+                    if self._stop_event.is_set():
+                        break
                     time.sleep(0.25)
-                    if self._stop_event.is_set(): break
+                    if self._stop_event.is_set():
+                        break
                     # 获取章节标题
                     chapter_title = chapter.find("a").get_text()
 
@@ -131,7 +133,8 @@ class DownloadNovel(threading.Thread):
                     chapter_content = None
                     retry_count = 1
                     while retry_count < 4:  # 设置最大重试次数
-                        if self._stop_event.is_set(): break
+                        if self._stop_event.is_set():
+                            break
                         # 获取 api 响应
                         api_response = requests.get(api_url, headers=self.fanqie.headers)
 
@@ -182,6 +185,7 @@ class DownloadNovel(threading.Thread):
                 # 打印完成信息
                 print(f"已保存{self.fanqie.title}.txt")
                 file_path = os.path.join('./', file_name)
+                file_path = Path(file_path)
                 self.webdav.upload_file(from_path=file_path, to_path=os.path.join('/public', file_name))
 
             except BaseException as e:
@@ -252,7 +256,8 @@ class DownloadNovel(threading.Thread):
 
                 # 遍历每个卷
                 for div in nested_divs:
-                    if self._stop_event.is_set(): break
+                    if self._stop_event.is_set():
+                        break
                     first_chapter = None
                     volume_id += 1
                     volume_div = div.find('div', class_='volume')
@@ -262,7 +267,8 @@ class DownloadNovel(threading.Thread):
                     chapters = div.find_all("div", class_="chapter-item")
                     start_index = None
                     for i, chapter in enumerate(chapters):
-                        if self._stop_event.is_set(): break
+                        if self._stop_event.is_set():
+                            break
                         chapter_url_tmp = urljoin(self.fanqie.url, chapter.find("a")["href"])
                         chapter_id_tmp = re.search(r"/(\d+)", chapter_url_tmp).group(1)
                         if chapter_id_tmp == '0':  # epub模式不支持起始章节
@@ -276,9 +282,11 @@ class DownloadNovel(threading.Thread):
                     # 遍历每个章节链接
                     for chapter in chapters[start_index:]:
                         chapter_id_name += 1
-                        if self._stop_event.is_set(): break
+                        if self._stop_event.is_set():
+                            break
                         time.sleep(0.25)
-                        if self._stop_event.is_set(): break
+                        if self._stop_event.is_set():
+                            break
                         # 获取章节标题
                         chapter_title = chapter.find("a").get_text()
 
@@ -297,7 +305,8 @@ class DownloadNovel(threading.Thread):
                         chapter_content = None
                         retry_count = 1
                         while retry_count < 4:  # 设置最大重试次数
-                            if self._stop_event.is_set(): break
+                            if self._stop_event.is_set():
+                                break
                             # 获取 api 响应
                             api_response = requests.get(api_url, headers=self.fanqie.headers)
 
@@ -355,10 +364,10 @@ class DownloadNovel(threading.Thread):
             book.add_item(epub.EpubNav())
 
             file_name = self.fanqie.title + ".epub"
-            file_path = os.path.join('/root/alist/book/books', file_name)
             file_path = os.path.join('./', file_name)
 
             epub.write_epub(file_path, book, {})
+            file_path = Path(file_path)
             self.webdav.upload_file(from_path=file_path, to_path=os.path.join('/public', file_name))
 
             print("文件已保存！")
