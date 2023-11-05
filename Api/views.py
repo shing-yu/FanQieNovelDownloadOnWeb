@@ -46,7 +46,7 @@ def download(request):
     return JsonResponse({'error': 'Invalid request method'}, status=405, headers={'Access-Control-Allow-Origin': '*'})
 
 
-def download_del(request, pk):
+def download_del(_request, pk):
     global download_object
     try:
         history_ = History.objects.get(obid=pk)
@@ -63,7 +63,7 @@ def download_del(request, pk):
 
 
 @csrf_exempt  # 为了允许跨域请求，可选
-def history(request):
+def history(_request):
     records = History.objects.all()
     response_data = {'history': []}
     for record in records:
@@ -79,7 +79,7 @@ def history(request):
     return JsonResponse(response_data, status=200, headers={'Access-Control-Allow-Origin': '*'})
 
 
-def history_id(request, pk):
+def history_id(_request, pk):
     history_entry = History.objects.get(obid=pk)
     print(history_entry.percent)
     return JsonResponse({'percent': history_entry.percent}, status=200, headers={'Access-Control-Allow-Origin': '*'})
