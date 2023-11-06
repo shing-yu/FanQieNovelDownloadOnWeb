@@ -74,7 +74,7 @@ def history(_request):
                                          'obid': record.obid,
                                          'file_name': record.file_name,
                                          'percent': record.percent})
-    # response_data['history'] = response_data['history'].reverse()
+    response_data['history'] = response_data['history'][::-1]
     # print(type(response_data['history']))
     return JsonResponse(response_data, status=200, headers={'Access-Control-Allow-Origin': '*'})
 

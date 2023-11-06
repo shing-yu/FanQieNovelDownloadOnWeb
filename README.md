@@ -22,6 +22,7 @@ python manage.py runserver 0.0.0.0:8000
 ```shell
 docker run --name="fanqie"\
  -v /root/alist/book/books:/root/alist/book/books\
+ --restart=unless-stopped\
  -p 8000:8000\
  -d weiweicool/fanqie-novel-download-on-web
 ``` 
@@ -42,6 +43,7 @@ docker run --name="fanqie"\
  -e WEBDAV_PWD={pwd}\
  -e WEBDAV_URL={your_webdav_url}\
  -e IS_WEBDAV=True\
+ --restart=unless-stopped\
  -d weiweicool/fanqie-novel-download-on-web
 ```
 
