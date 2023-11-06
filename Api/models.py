@@ -7,4 +7,3 @@ class History(models.Model):
     book_id = models.CharField(max_length=255)
     obid = models.CharField(max_length=255)
     objects = models.Manager()
-
