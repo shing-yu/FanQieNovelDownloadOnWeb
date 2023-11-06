@@ -363,7 +363,7 @@ class DownloadNovel(threading.Thread):
                     book.toc = book.toc + ((epub.Section(volume_title, href=first_chapter),
                                             toc_index,),)
             except BaseException as e:
-                # 捕获所有异常，及时保存文件
+                # 捕获所有异常
                 print(f"发生异常: \n{e}")
                 return
 
