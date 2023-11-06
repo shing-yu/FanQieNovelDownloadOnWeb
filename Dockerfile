@@ -21,4 +21,4 @@ RUN python manage.py migrate
 # EXPOSE 8000
 
 # 启动 Django 应用
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "manage.py", "runserver", "[::]:8000"]
