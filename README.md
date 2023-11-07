@@ -53,6 +53,29 @@ docker run --name="fanqie"\
 依据 GPLv3.0 第5条c) ，本项目使用 GPLv3.0 协议开源。
 您可以在[此处](https://www.gnu.org/licenses/gpl-3.0.html)找到许可证的副本， 
 
+## 贡献
+
+我们非常欢迎并感谢所有的贡献者。如果你对这个项目有兴趣并希望做出贡献，以下是一些你可以参与的方式：
+
+### 报告问题
+
+如果你在使用过程中发现了问题，或者有任何改进的建议，欢迎通过 [Issues](https://github.com/weiwei-cool/FanQieNovelDownloadOnWeb/issues) 页面提交问题或建议。
+
+### 提交代码
+
+如果你想直接改进代码，可以 [Fork 本项目](https://github.com/weiwei-cool/FanQieNovelDownloadOnWeb/fork)，然后提交 Pull Request。
+
+在提交 Pull Request 之前：
+
+- 请确保您的代码符合Python的[PEP8](https://www.python.org/dev/peps/pep-0008/)规范。
+- 请确保您的代码在所有操作系统上都能正常运行。
+- 如果您想在本项目中添加新功能，请先创建一个issue，并在issue中详细描述您的想法。
+- 建议：在您的代码中添加明确注释，以帮助其他人理解。
+- 可选：在您的commit信息中使用[约定式提交](https://www.conventionalcommits.org/zh-hans/v1.0.0/)规范。
+- 可选：使用 GPG 密钥签名您的提交。  
+
+(使用可选项可以帮助我们快速审查您的Pull Request。)
+
 ## 免责声明
 此程序旨在用于与Python网络爬虫和网页处理技术相关的教育和研究目的。不应将其用于任何非法活动或侵犯他人权利的行为。用户对使用此程序引发的任何法律责任和风险负有责任，作者和项目贡献者不对因使用程序而导致的任何损失或损害承担责任。
 
