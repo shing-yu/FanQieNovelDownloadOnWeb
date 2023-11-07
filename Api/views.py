@@ -85,7 +85,7 @@ def history_id(_request, pk):
     return JsonResponse({'percent': history_entry.percent}, status=200)
 
 
-def get_download_uel(request):
+def get_download_uel(_request):
     public_url = os.environ.get('PUBLIC_URL')
     ret = {'download_url': public_url}
     return JsonResponse(ret, status=200)
