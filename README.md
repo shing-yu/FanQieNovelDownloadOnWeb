@@ -1,5 +1,6 @@
 # FanQieNovelDownloadOnWeb
 一个用以下载番茄小说的web应用
+您可在[这](https://github.com/weiwei-cool/FanQieNovelDownloadOnWebUI)找到此项目的前端
 
 ## 特点
 
@@ -25,13 +26,16 @@ docker run --name="fanqie"\
  --restart=unless-stopped\
  -p 8000:8000\
  -d weiweicool/fanqie-novel-download-on-web
-``` 
-<br>
+```
 
-另外，如果您**想要**开启**WebDav**模式，请设置环境变量：  
-`IS_WEBDAV=True` `WEBDAV_USERNAME={user_name}` `WEBDAV_PWD={pwd}` `WEBDAV_URL={your_webdav_url}`  
+### WebDAV模式
+如果您**想要**开启**WebDav**模式，请设置环境变量：  
+`IS_WEBDAV=True` `WEBDAV_USERNAME={user_name}` `WEBDAV_PWD={pwd}` `WEBDAV_URL={your_webdav_url}`  `PUBLIC_URL={your_public_url}`
 以**WebDav**模式运行时，应用会将下载完成的小说自动上传至webdav服务器中的/public目录下  
 请将`{user_name}` `{pwd}` 和 `{your_webdav_url}` 分别替换为您的webdav账号，密码和地址
+请将`{your_public_url}` 设置为您的下载地址，也就是 webdav下/public目录的对公网的链接
+
+源码运行时，请注意设置环境变量
 
 以下为WebDav模式docker运行命令示例：  
 **注意！如果您的webdav服务器为纯ipv6访问，请您一定要将docker设置为允许ipv6(默认不支持)**
@@ -42,6 +46,7 @@ docker run --name="fanqie"\
  -e WEBDAV_USERNAME={user_name}\
  -e WEBDAV_PWD={pwd}\
  -e WEBDAV_URL={your_webdav_url}\
+ -e PUBLIC_URL={your_public_url}\
  -e IS_WEBDAV=True\
  --restart=unless-stopped\
  -d weiweicool/fanqie-novel-download-on-web

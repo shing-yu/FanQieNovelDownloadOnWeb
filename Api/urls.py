@@ -18,9 +18,15 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    # 下载接口
     path('down/', views.download),
+    # 删除正在下载的小说
     path('down/del/<str:pk>/', views.download_del),
+    # 查询正在下载的小说
     path('history/', views.history),
+    # 查询具体的小说
     path('history/<str:pk>/', views.history_id),
+    # 获取公网下载链接
+    path('get_download_url/', views.get_download_uel),
     #    path('admin/', admin.site.urls),
 ]

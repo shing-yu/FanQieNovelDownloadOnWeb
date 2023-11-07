@@ -1,3 +1,5 @@
+import os
+
 from django.http import JsonResponse
 from .Fanqie import Fanqie, DownloadNovel
 from django.views.decorators.csrf import csrf_exempt
@@ -39,11 +41,11 @@ def download(request):
                 d.start()
             # 在这里处理URLs，您可以执行下载操作或其他所需的操作
             response_data = {'message': 'Download request received', 'urls': urls, 'return': return_url}
-            return JsonResponse(response_data, status=200, headers={'Access-Control-Allow-Origin': '*'})
+            return JsonResponse(response_data, status=200)
         except Exception as e:
             print(e)
-            return JsonResponse({'error': str(e)}, status=500, headers={'Access-Control-Allow-Origin': '*'})
-    return JsonResponse({'error': 'Invalid request method'}, status=405, headers={'Access-Control-Allow-Origin': '*'})
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
 def download_del(_request, pk):
@@ -55,11 +57,10 @@ def download_del(_request, pk):
                 i['obj'].stop()
         history_.delete()
         response_data = {'status': 'ok'}
-        return JsonResponse(response_data, status=200, headers={'Access-Control-Allow-Origin': '*'})
+        return JsonResponse(response_data, status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({'status': 'error', 'error': str(e)}, status=400,
-                            headers={'Access-Control-Allow-Origin': '*'})
+        return JsonResponse({'status': 'error', 'error': str(e)}, status=400)
 
 
 @csrf_exempt  # 为了允许跨域请求，可选
@@ -75,11 +76,16 @@ def history(_request):
                                          'file_name': record.file_name,
                                          'percent': record.percent})
     response_data['history'] = response_data['history'][::-1]
-    # print(type(response_data['history']))
-    return JsonResponse(response_data, status=200, headers={'Access-Control-Allow-Origin': '*'})
+    return JsonResponse(response_data, status=200)
 
 
 def history_id(_request, pk):
     history_entry = History.objects.get(obid=pk)
     print(history_entry.percent)
-    return JsonResponse({'percent': history_entry.percent}, status=200, headers={'Access-Control-Allow-Origin': '*'})
+    return JsonResponse({'percent': history_entry.percent}, status=200)
+
+
+def get_download_uel(request):
+    public_url = os.environ.get('PUBLIC_URL')
+    ret = {'download_url': public_url}
+    return JsonResponse(ret, status=200)

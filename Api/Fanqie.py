@@ -91,7 +91,6 @@ class DownloadNovel(threading.Thread):
         super().__init__()
 
     def run(self) -> None:
-        global api_data
         history_entry = History.objects.get(obid=self.fanqie.obid)
         print(self.fanqie)
         if self.fanqie.mode == 'txt':
