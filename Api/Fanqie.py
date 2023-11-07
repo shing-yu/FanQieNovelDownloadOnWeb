@@ -91,6 +91,7 @@ class DownloadNovel(threading.Thread):
         super().__init__()
 
     def run(self) -> None:
+        global api_data
         history_entry = History.objects.get(obid=self.fanqie.obid)
         print(self.fanqie)
         if self.fanqie.mode == 'txt':
@@ -138,11 +139,25 @@ class DownloadNovel(threading.Thread):
                     while retry_count < 4:  # 设置最大重试次数
                         if self._stop_event.is_set():
                             break
-                        # 获取 api 响应
-                        api_response = requests.get(api_url, headers=self.fanqie.headers)
 
-                        # 解析 api 响应为 json 数据
-                        api_data = api_response.json()
+                        def get_api():
+                            # 获取 api 响应
+                            api_response_ = requests.get(api_url, headers=self.fanqie.headers)
+
+                            # 解析 api 响应为 json 数据
+                            api_data_ = api_response_.json()
+                            return api_data_
+
+                        api_data = None
+                        retry_get_api = 1
+                        while retry_get_api < 4:
+                            try:
+                                api_data = get_api()
+                            except Exception as e:
+                                print(f"error:{e}")
+                            else:
+                                break
+                            retry_get_api += 1
 
                         if "data" in api_data and "content" in api_data["data"]:
                             chapter_content = api_data["data"]["content"]
@@ -315,11 +330,25 @@ class DownloadNovel(threading.Thread):
                         while retry_count < 4:  # 设置最大重试次数
                             if self._stop_event.is_set():
                                 break
-                            # 获取 api 响应
-                            api_response = requests.get(api_url, headers=self.fanqie.headers)
 
-                            # 解析 api 响应为 json 数据
-                            api_data = api_response.json()
+                            def get_api():
+                                # 获取 api 响应
+                                api_response_ = requests.get(api_url, headers=self.fanqie.headers)
+
+                                # 解析 api 响应为 json 数据
+                                api_data_ = api_response_.json()
+                                return api_data_
+
+                            api_data = None
+                            retry_get_api = 1
+                            while retry_get_api < 4:
+                                try:
+                                    api_data = get_api()
+                                except Exception as e:
+                                    print(f"error:{e}")
+                                else:
+                                    break
+                                retry_get_api += 1
 
                             if "data" in api_data and "content" in api_data["data"]:
                                 chapter_content = api_data["data"]["content"]
