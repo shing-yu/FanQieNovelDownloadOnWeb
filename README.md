@@ -19,7 +19,8 @@ python manage.py migrate
 python manage.py runserver 0.0.0.0:8000
 ```
 ### docker运行
-如果您需要使用docker运行请使用以下命令
+如果您需要使用docker运行请使用以下命令  
+**重要提示！如果您的服务部署在ipv6上，请一定开启docker的ipv6模式，并启动您服务器的ipv6转发！**  
 ```shell
 docker run --name="fanqie"\
  -v /root/alist/book/books:/root/alist/book/books\
@@ -30,15 +31,15 @@ docker run --name="fanqie"\
 
 ### WebDAV模式
 如果您**想要**开启**WebDav**模式，请设置环境变量：  
-`IS_WEBDAV=True` `WEBDAV_USERNAME={user_name}` `WEBDAV_PWD={pwd}` `WEBDAV_URL={your_webdav_url}`  `PUBLIC_URL={your_public_url}`
-以**WebDav**模式运行时，应用会将下载完成的小说自动上传至webdav服务器中的/public目录下  
-请将`{user_name}` `{pwd}` 和 `{your_webdav_url}` 分别替换为您的webdav账号，密码和地址
-请将`{your_public_url}` 设置为您的下载地址，也就是 webdav下/public目录的对公网的链接
+`IS_WEBDAV=True` `WEBDAV_USERNAME={user_name}` `WEBDAV_PWD={pwd}` `WEBDAV_URL={your_webdav_url}`  `PUBLIC_URL={your_public_url}`  
+以**WebDav**模式运行时，应用会将下载完成的小说自动上传至webdav服务器中的/public目录下   
+请将`{user_name}` `{pwd}` 和 `{your_webdav_url}` 分别替换为您的webdav账号，密码和地址  
+请将`{your_public_url}` 设置为您的下载地址，也就是 webdav下/public目录的对公网的链接  
 
-源码运行时，请注意设置环境变量
+源码运行时，请注意设置环境变量  
 
 以下为WebDav模式docker运行命令示例：  
-**注意！如果您的webdav服务器为纯ipv6访问，请您一定要将docker设置为允许ipv6(默认不支持)**
+**注意！如果您的webdav服务器为纯ipv6访问，请您一定要将docker设置为允许ipv6(默认不支持)**  
 ```shell
 docker run --name="fanqie"\
  -v /root/alist/book/books:/root/alist/book/books\
