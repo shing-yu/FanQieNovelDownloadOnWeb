@@ -7,12 +7,13 @@ from django.views.decorators.http import require_POST
 import json
 from .models import History
 
+# 下载的小说集合
 download_object = []
 
 
 @csrf_exempt  # 为了允许跨域请求，可选
 @require_POST  # 确保只接受POST请求，可选
-def download(request):
+def download(request):  # 下载接口
     global download_object
     if request.method == 'POST':
         try:
@@ -48,7 +49,7 @@ def download(request):
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
-def download_del(_request, pk):
+def download_del(_request, pk):  # 删除任务中的小说
     global download_object
     try:
         history_ = History.objects.get(obid=pk)
@@ -64,7 +65,7 @@ def download_del(_request, pk):
 
 
 @csrf_exempt  # 为了允许跨域请求，可选
-def history(_request):
+def history(_request):  # 查询所有正在任务中的小说
     records = History.objects.all()
     response_data = {'history': []}
     for record in records:
@@ -79,13 +80,13 @@ def history(_request):
     return JsonResponse(response_data, status=200)
 
 
-def history_id(_request, pk):
+def history_id(_request, pk):  # 根据具体obid查询小说下载数据
     history_entry = History.objects.get(obid=pk)
     print(history_entry.percent)
     return JsonResponse({'percent': history_entry.percent}, status=200)
 
 
-def get_download_uel(request):
+def get_download_uel(request):  # 获取公开的小说下载链接目录
     public_url = os.environ.get('PUBLIC_URL')
     ret = {'download_url': public_url}
     return JsonResponse(ret, status=200)

@@ -26,10 +26,12 @@ class Fanqie:
         self.html = response.text
         self.book_id = re.search(r"/(\d+)", url).group(1)
 
+        # obid: only-book-id 唯一小说识别码
         self.obid = f'{self.book_id}-{self.mode}'
 
         self.soup = BeautifulSoup(self.html, "html.parser")
 
+        # 获取小说标题
         self.title = self.soup.find("h1").get_text()
         self.title = rename(self.title)
 
@@ -77,9 +79,13 @@ def rename(name):
 
 class DownloadNovel(threading.Thread):
     def __init__(self, fanqie: Fanqie):
+        # 番茄小说对象
         self.fanqie = fanqie
+        # 停止子进程
         self._stop_flag = False
         self._stop_event = threading.Event()
+
+        # 自定义WebDav路径
         self.is_webdav = os.environ.get('IS_WEBDAV')
         if self.is_webdav:
             self.webdav_username = os.environ.get('WEBDAV_USERNAME')
@@ -88,11 +94,20 @@ class DownloadNovel(threading.Thread):
             self.webdav = Client(base_url=self.webdav_url,
                                  auth=(self.webdav_username, self.webdav_pwd))
             print('webdav加载成功')
+
+        # 自定义保存路径
+        self.custom_path = os.environ.get('CUSTOM_PATH')
+        if not self.custom_path:
+            self.custom_path = '/root/alist/book/books'
+
         super().__init__()
 
     def run(self) -> None:
+        # 数据库中获取小说对象
         history_entry = History.objects.get(obid=self.fanqie.obid)
-        print(self.fanqie)
+        print(self.fanqie) # 小说信息
+
+        # 判断下载模式
         if self.fanqie.mode == 'txt':
             print('txt模式')
 
@@ -103,7 +118,7 @@ class DownloadNovel(threading.Thread):
             start_index = 0
 
             file_name = self.fanqie.title + ".txt"
-            file_path = os.path.join('/root/alist/book/books', file_name)
+            file_path = os.path.join(self.custom_path, file_name)
 
             # 获取章节数
             chapters = self.fanqie.soup.find_all("div", class_="chapter-item")
@@ -199,7 +214,7 @@ class DownloadNovel(threading.Thread):
                 with open(file_path, "wb") as f:
                     f.write(data)
 
-                file_path = os.path.join('/root/alist/book/books', file_name)
+                file_path = os.path.join(self.custom_path, file_name)
                 file_path = Path(file_path)
                 if self.is_webdav:
                     self.webdav.upload_file(from_path=file_path,
@@ -218,6 +233,7 @@ class DownloadNovel(threading.Thread):
                 data = content.encode('utf-8', errors='ignore')
 
                 # 保存文件
+                file_path = os.path.join(self.custom_path, file_name)
                 with open(file_path, "wb") as f:
                     f.write(data)
 
@@ -412,6 +428,7 @@ class DownloadNovel(threading.Thread):
 
             print("文件已保存！")
 
+    # 停止子进程函数
     def stop(self):
         self._stop_event.set()
 
