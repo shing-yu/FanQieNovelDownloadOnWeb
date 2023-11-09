@@ -1,6 +1,6 @@
 # FanQieNovelDownloadOnWeb
-一个用以下载番茄小说的web应用
-您可在[这](https://github.com/weiwei-cool/FanQieNovelDownloadOnWebUI)找到此项目的前端
+一个用以下载番茄小说的web应用  
+您可在[这里](https://github.com/weiwei-cool/FanQieNovelDownloadOnWebUI)找到此项目的前端
 
 ## 特点
 
@@ -18,9 +18,11 @@ pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver 0.0.0.0:8000
 ```
-### docker运行
+### Docker运行
+
 如果您需要使用docker运行请使用以下命令  
-**重要提示！如果您的服务部署在ipv6上，请一定开启docker的ipv6模式，并启动您服务器的ipv6转发！**  
+**重要提示：如果您的服务部署在ipv6上，请一定开启Docker的ipv6模式，并启动您服务器的ipv6转发！**  
+
 ```shell
 docker run --name="fanqie"\
  -v /root/alist/book/books:/root/alist/book/books\
@@ -40,6 +42,7 @@ docker run --name="fanqie"\
 
 以下为WebDav模式docker运行命令示例：  
 **注意！如果您的webdav服务器为纯ipv6访问，请您一定要将docker设置为允许ipv6(默认不支持)**  
+
 ```shell
 docker run --name="fanqie"\
  -v /root/alist/book/books:/root/alist/book/books\
@@ -56,14 +59,14 @@ docker run --name="fanqie"\
 
 ## 开源与许可证
 此项目使用来自 @xing-yv的[fanqie-novel-download](https://github.com/xing-yv/fanqie-novel-download)的源代码  
-依据 GPLv3.0 第5条c) ，本项目使用 GPLv3.0 协议开源。
+依据 GPLv3.0 第5条c) ，本项目使用 GPLv3.0 协议开源。  
 您可以在[此处](https://www.gnu.org/licenses/gpl-3.0.html)找到许可证的副本， 
 
 ## 贡献
 
 我们非常欢迎并感谢所有的贡献者。如果你对这个项目有兴趣并希望做出贡献，以下是一些你可以参与的方式：
 
-### 报告问题
+### 报告问题或建议
 
 如果你在使用过程中发现了问题，或者有任何改进的建议，欢迎通过 [Issues](https://github.com/weiwei-cool/FanQieNovelDownloadOnWeb/issues) 页面提交问题或建议。
 
@@ -87,12 +90,14 @@ docker run --name="fanqie"\
 
 在使用此程序之前，请确保遵守相关法律法规以及网站的使用政策，并在有任何疑问或担忧时咨询法律顾问。
 
-您因使用此软件产生的一切法律纠纷与开发者无关
+您因使用此软件产生的一切法律纠纷与开发者无关。
+
+本软件提供的是按"**原样**"提供的，没有任何明示或暗示的保证，包括但不限于适销性和特定用途的适用性。
+
+作者不对任何直接或间接损害或其他责任承担任何责任。在适用法律允许的最大范围内，作者明确放弃了所有明示或暗示的担保和条件。
+
 
 ## 作者
- 
- - 思维（weiweicool）[github](https://github.com/weiwei-cool)
 
-## 反馈
+ - 思维（weiwei-cool）[github](https://github.com/weiwei-cool)
 
-如果您遇到问题或有改进建议，请将其提交到此项目的[GitHub issues](https://github.com/weiwei-cool/FanQieNovelDownloadOnWeb/issues)页面。

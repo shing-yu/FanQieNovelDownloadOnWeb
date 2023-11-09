@@ -86,7 +86,7 @@ def history_id(_request, pk):  # 根据具体obid查询小说下载数据
     return JsonResponse({'percent': history_entry.percent}, status=200)
 
 
-def get_download_uel(request):  # 获取公开的小说下载链接目录
+def get_download_uel(_request):  # 获取公开的小说下载链接目录
     public_url = os.environ.get('PUBLIC_URL')
     ret = {'download_url': public_url}
     return JsonResponse(ret, status=200)
