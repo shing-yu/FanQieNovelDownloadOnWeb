@@ -10,7 +10,9 @@
  - 支持txt、epub格式保存
 
 ## 使用方法
-您可以在环境变量`CUSTOM_PATH`中添加数值来自定义您的保存路径
+### 相关配置
+您可以在环境变量`CUSTOM_PATH`中添加数值来自定义您的保存路径  
+您可以在环境变量`DEFAULT_DMODE`中设置`txt`或`epub`来自定义前端默认的下载模式
 ### 源码运行
 ```shell
 git clone https://github.com/weiwei-cool/FanQieNovelDownloadOnWeb.git
