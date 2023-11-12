@@ -86,7 +86,17 @@ def history_id(_request, pk):  # 根据具体obid查询小说下载数据
     return JsonResponse({'percent': history_entry.percent}, status=200)
 
 
-def get_download_uel(_request):  # 获取公开的小说下载链接目录
+def get_config(_request):  # 获取公开的小说下载链接目录
+    # 公开下载链接
     public_url = os.environ.get('PUBLIC_URL')
-    ret = {'download_url': public_url}
+
+    # 默认下载模式
+    default_download_mode = os.environ.get('DEFAULT_DMODE')
+    if not default_download_mode:
+        default_download_mode = 'epub'
+
+    ret = {
+        'download_url': public_url,
+        'default_download_mode': default_download_mode
+    }
     return JsonResponse(ret, status=200)

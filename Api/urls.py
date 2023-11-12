@@ -27,6 +27,6 @@ urlpatterns = [
     # 查询具体的小说
     path('history/<str:pk>/', views.history_id),
     # 获取公网下载链接
-    path('get_download_url/', views.get_download_uel),
+    path('get_config/', views.get_config),
     #    path('admin/', admin.site.urls),
 ]
