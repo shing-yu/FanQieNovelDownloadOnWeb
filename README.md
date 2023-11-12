@@ -75,7 +75,8 @@ docker run --name="fanqie"\
 
 ### 提交代码
 
-如果你想直接改进代码，可以 [Fork 本项目](https://github.com/weiwei-cool/FanQieNovelDownloadOnWeb/fork)，然后提交 Pull Request。
+如果你想直接改进代码，可以 [Fork 本项目](https://github.com/weiwei-cool/FanQieNovelDownloadOnWeb/fork)，然后提交 Pull Request。  
+**您应在feature分支或hotfix分支进行修改，完成后Pull Request至feature/hotfix分支。**
 
 在提交 Pull Request 之前：
 
