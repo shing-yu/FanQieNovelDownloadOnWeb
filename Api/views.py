@@ -17,14 +17,23 @@ def download(request):  # 下载接口
     global download_object
     if request.method == 'POST':
         try:
+            # 获取url数据
             data = json.loads(request.body.decode('utf-8'))
             urls = data.get('urls', [])
+
+            # 获取下载方式
             format_ = data.get('format', 'txt')
             print(format_)
+
+            # 获取书本信息
             book = []
             urls = list(set(urls))
             [book.append(Fanqie(url, format_)) for url in urls]
+
+            # 查看重复下载的书籍
             return_url = []
+
+            # 开启下载进程
             for i in book:
                 print(i)
                 try:
@@ -40,7 +49,8 @@ def download(request):  # 下载接口
                 d = DownloadNovel(i)
                 download_object.append({'obid': i.obid, 'obj': d})
                 d.start()
-            # 在这里处理URLs，您可以执行下载操作或其他所需的操作
+
+            # 返回成功和重复的数据
             response_data = {'message': 'Download request received', 'urls': urls, 'return': return_url}
             return JsonResponse(response_data, status=200)
         except Exception as e:
