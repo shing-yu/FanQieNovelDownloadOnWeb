@@ -105,7 +105,7 @@ class DownloadNovel(threading.Thread):
     def run(self) -> None:
         # 数据库中获取小说对象
         history_entry = History.objects.get(obid=self.fanqie.obid)
-        print(self.fanqie) # 小说信息
+        print(self.fanqie)  # 小说信息
 
         # 判断下载模式
         if self.fanqie.mode == 'txt':
@@ -406,6 +406,7 @@ class DownloadNovel(threading.Thread):
                     # 加入书籍索引
                     book.toc = book.toc + ((epub.Section(volume_title, href=first_chapter),
                                             toc_index,),)
+            # 捕获异常
             except BaseException as e:
                 # 捕获所有异常
                 print(f"发生异常: \n{e}")
@@ -415,10 +416,14 @@ class DownloadNovel(threading.Thread):
             book.add_item(epub.EpubNcx())
             book.add_item(epub.EpubNav())
 
+            # 拼接文件名和文件路径
             file_name = self.fanqie.title + ".epub"
             file_path = os.path.join('/root/alist/book/books', file_name)
 
+            # 书写电子书
             epub.write_epub(file_path, book, {})
+
+            # webdav上传
             file_path = Path(file_path)
             if self.is_webdav:
                 self.webdav.upload_file(from_path=file_path,
