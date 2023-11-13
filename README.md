@@ -65,6 +65,9 @@ docker run --name="fanqie"\
 依据 GPLv3.0 第5条c) ，本项目使用 GPLv3.0 协议开源。  
 您可以在[此处](https://www.gnu.org/licenses/gpl-3.0.html)找到许可证的副本， 
 
+## 鸣谢
+感谢源项目的作者 [@xing-yv](https://github.com/xing-yv) 对本项目开发的指导与支持！
+
 ## 贡献
 
 我们非常欢迎并感谢所有的贡献者。如果你对这个项目有兴趣并希望做出贡献，以下是一些你可以参与的方式：
