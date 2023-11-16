@@ -1,86 +1,25 @@
 import re
 import os
-import json
 import time
+import tools
+import threading
+import requests
 from urllib.parse import urljoin
 from webdav4.client import Client
-import requests
-from bs4 import BeautifulSoup
+from . import Fanqie
 from ebooklib import epub
-import threading
-from .models import History
+from Api.models import History
 from pathlib import Path
 
 
-class Fanqie:
-    ua = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 "
-          "Safari/537.36 Edg/119.0.0.0")
-    headers = {
-        "User-Agent": ua
-    }
-
-    def __init__(self, url, mode):
-        response = requests.get(url, headers=self.headers)
-        self.url = url
-        self.mode = mode
-        self.html = response.text
-        self.book_id = re.search(r"/(\d+)", url).group(1)
-
-        # obid: only-book-id 唯一小说识别码
-        self.obid = f'{self.book_id}-{self.mode}'
-
-        self.soup = BeautifulSoup(self.html, "html.parser")
-
-        # 获取小说标题
-        self.title = self.soup.find("h1").get_text()
-        self.title = rename(self.title)
-
-        # 获取小说简介
-        self.intro = self.soup.find("div", class_="page-abstract-content").get_text()
-
-        # 获取小说作者
-        self.author_name = self.soup.find('span', class_='author-name-text').get_text()
-
-        # 找到type="application/ld+json"的<script>标签
-        script_tag = self.soup.find('script', type='application/ld+json')
-
-        # 提取每个<script>标签中的JSON数据
-        json_data = json.loads(script_tag.string)
-        images_data = json_data.get('image', [])
-        # 打印提取出的images数据
-        self.img_url = images_data[0]
-
-    def __str__(self):
-        return (f'FanqieNovel: {self.title}\n'
-                f'author: {self.author_name}')
-
-
-def rename(name):
-    # 定义非法字符的正则表达式模式
-    illegal_characters_pattern = r'[\/:*?"<>|]'
-
-    # 定义替换的中文符号
-    replacement_dict = {
-        '/': '／',
-        ':': '：',
-        '*': '＊',
-        '?': '？',
-        '"': '“',
-        '<': '＜',
-        '>': '＞',
-        '|': '｜'
-    }
-
-    # 使用正则表达式替换非法字符
-    sanitized_path = re.sub(illegal_characters_pattern, lambda x: replacement_dict[x.group(0)], name)
-
-    return sanitized_path
-
-
 class DownloadNovel(threading.Thread):
+    """
+    下载小说，应传入番茄对象
+    """
+
     def __init__(self, fanqie: Fanqie):
         # 番茄小说对象
-        self.fanqie = fanqie
+        self.fanqie: Fanqie = fanqie
         # 停止子进程
         self._stop_flag = False
         self._stop_event = threading.Event()
@@ -93,7 +32,7 @@ class DownloadNovel(threading.Thread):
             self.webdav_url = os.environ.get('WEBDAV_URL')
             self.webdav = Client(base_url=self.webdav_url,
                                  auth=(self.webdav_username, self.webdav_pwd))
-            print('webdav加载成功')
+            tools.logger.info(f'已成功加载webdav服务器({self.webdav_url})')
 
         # 自定义保存路径
         self.custom_path = os.environ.get('CUSTOM_PATH')
@@ -105,11 +44,11 @@ class DownloadNovel(threading.Thread):
     def run(self) -> None:
         # 数据库中获取小说对象
         history_entry = History.objects.get(obid=self.fanqie.obid)
-        print(self.fanqie)  # 小说信息
+        tools.logger.info(f'开始下载小说: {self.fanqie.__str__()}')
 
         # 判断下载模式
         if self.fanqie.mode == 'txt':
-            print('txt模式')
+            tools.logger.info(f'正在以txt模式下载小说')
 
             content = f"""{self.fanqie.title}
             {self.fanqie.intro}
@@ -168,7 +107,7 @@ class DownloadNovel(threading.Thread):
                             try:
                                 api_data = get_api()
                             except Exception as e:
-                                print(f"error:{e}")
+                                tools.logger.error('错误！{e}')
                             else:
                                 break
                             retry_get_api += 1
@@ -178,12 +117,12 @@ class DownloadNovel(threading.Thread):
                             break  # 如果成功获取章节内容，跳出重试循环
                         else:
                             if retry_count == 1:
-                                print(f"{chapter_title} 获取失败，正在尝试重试...")
-                            print(f"第 ({retry_count}/3) 次重试获取章节内容")
+                                tools.logger.warning(f'{chapter_title} 获取失败，正在尝试重试...')
+                            tools.logger.warning(f'第 ({retry_count}/3) 次重试获取章节内容')
                             retry_count += 1  # 否则重试
 
                     if retry_count == 4:
-                        print(f"无法获取章节内容: {chapter_title}，跳过。")
+                        tools.logger.error(f'无法获取章节内容: {chapter_title}，跳过。')
                         continue  # 重试次数过多后，跳过当前章节
 
                     # 提取文章标签中的文本
@@ -195,18 +134,18 @@ class DownloadNovel(threading.Thread):
                     # 去除其他 html 标签
                     chapter_text = re.sub(r"</?\w+>", "", chapter_text)
 
-                    chapter_text = fix_publisher(chapter_text)
+                    chapter_text = tools.fix_publisher(chapter_text)
 
                     # 在小说内容字符串中添加章节标题和内容
                     content += f"\n\n\n{chapter_title}\n{chapter_text}"
 
-                    # 打印进度信息
-                    print(f"已获取 {chapter_title}")
                     chapter_num_now += 1
                     history_entry.percent = round(
                         (chapter_num_now / chapter_num) * 100, 2)
                     history_entry.save()
-                    print(f'进度：{history_entry.percent}%')
+
+                    # 打印进度信息
+                    tools.logger.info(f'已获取 {chapter_title}, 进度：{history_entry.percent}%')
                 # 根据编码转换小说内容字符串为二进制数据
                 data = content.encode('utf-8', errors='ignore')
 
@@ -220,15 +159,15 @@ class DownloadNovel(threading.Thread):
                     self.webdav.upload_file(from_path=file_path,
                                             to_path=os.path.join('/public', file_name),
                                             overwrite=True)
-                    print("webdav保存成功")
+                    tools.logger.info(f'《{self.fanqie.title}》已成功上传webdav服务器')
 
                 # 打印完成信息
-                print(f"已保存{self.fanqie.title}.txt")
+                tools.logger.info(f'已保存{self.fanqie.title}.txt 至本地')
 
             except BaseException as e:
                 # 捕获所有异常，及时保存文件
-                print(f"发生异常: \n{e}")
-                print("正在尝试保存文件...")
+                tools.logger.error(f'发生异常: \n{e}')
+                tools.logger.info('正在尝试保存文件')
                 # 根据编码转换小说内容字符串为二进制数据
                 data = content.encode('utf-8', errors='ignore')
 
@@ -237,11 +176,11 @@ class DownloadNovel(threading.Thread):
                 with open(file_path, "wb") as f:
                     f.write(data)
 
-                print("文件已保存！")
+                tools.logger.info('文件已保存！')
                 return
 
         elif self.fanqie.mode == 'epub':
-            print('epub模式')
+            tools.logger.info(f'正在以epub模式下载小说')
 
             # 创建epub电子书
             book = epub.EpubBook()
@@ -301,7 +240,7 @@ class DownloadNovel(threading.Thread):
                     volume_div = div.find('div', class_='volume')
                     # 提取 "卷名" 文本
                     volume_title = volume_div.text
-                    print(volume_title)
+                    tools.logger.info(f'正在获取{volume_title}')
                     chapters = div.find_all("div", class_="chapter-item")
                     start_index = None
                     for i, chapter in enumerate(chapters):
@@ -360,7 +299,7 @@ class DownloadNovel(threading.Thread):
                                 try:
                                     api_data = get_api()
                                 except Exception as e:
-                                    print(f"error:{e}")
+                                    tools.logger.error(f'发生异常: \n{e}')
                                 else:
                                     break
                                 retry_get_api += 1
@@ -370,12 +309,12 @@ class DownloadNovel(threading.Thread):
                                 break  # 如果成功获取章节内容，跳出重试循环
                             else:
                                 if retry_count == 1:
-                                    print(f"{chapter_title} 获取失败，正在尝试重试...")
-                                print(f"第 ({retry_count}/3) 次重试获取章节内容")
+                                    tools.logger.warning(f'{chapter_title} 获取失败，正在尝试重试...')
+                                tools.logger.warning(f'第 ({retry_count}/3) 次重试获取章节内容')
                                 retry_count += 1  # 否则重试
 
                         if retry_count == 4:
-                            print(f"无法获取章节内容: {chapter_title}，跳过。")
+                            tools.logger.error(f'无法获取章节内容: {chapter_title}，跳过。')
                             continue  # 重试次数过多后，跳过当前章节
 
                         # 提取文章标签中的文本
@@ -396,20 +335,20 @@ class DownloadNovel(threading.Thread):
                         # 加入epub
                         book.add_item(text)
 
-                        # 打印进度信息
-                        print(f"已获取 {chapter_title}")
                         chapter_num_now += 1
                         history_entry.percent = round(
                             (chapter_num_now / chapter_num) * 100, 2)
                         history_entry.save()
-                        print(f'进度：{history_entry.percent}%')
+
+                        # 打印进度信息
+                        tools.logger.info(f'已获取 {chapter_title}, 进度：{history_entry.percent}%')
                     # 加入书籍索引
                     book.toc = book.toc + ((epub.Section(volume_title, href=first_chapter),
                                             toc_index,),)
             # 捕获异常
             except BaseException as e:
                 # 捕获所有异常
-                print(f"发生异常: \n{e}")
+                tools.logger.error(f'发生异常: \n{e}')
                 return
 
             # 添加 navigation 文件
@@ -429,24 +368,10 @@ class DownloadNovel(threading.Thread):
                 self.webdav.upload_file(from_path=file_path,
                                         to_path=os.path.join('/public', file_name),
                                         overwrite=True)
-                print("webdav保存成功")
+                tools.logger.info(f'《{self.fanqie.title}》已成功上传webdav服务器')
 
-            print("文件已保存！")
+            tools.logger.info(f'已保存{self.fanqie.title}.epub 至本地')
 
     # 停止子进程函数
     def stop(self):
         self._stop_event.set()
-
-
-def fix_publisher(text):
-    # 针对性去除所有 出版物 所携带的标签
-    text = re.sub(r'<p class=".*?">', '', text)
-    text = re.sub(r'<!--\?xml.*?>', '', text)
-    text = re.sub(r'<link .*?/>', '', text)
-    text = re.sub(r'<meta .*?/>', '', text)
-    text = re.sub(r'<h1 .*?>', '', text)
-    text = re.sub(r'<br/>', '', text)
-    text = re.sub(r'<!DOCTYPE html .*?>', '', text)
-    text = re.sub(r'<span .*?>', '', text)
-    text = re.sub(r'<html .*?>', '', text)
-    return text
