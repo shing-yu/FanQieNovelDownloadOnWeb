@@ -14,6 +14,8 @@
 您可以在环境变量`CUSTOM_PATH`中添加数值来自定义您的保存路径  
 您可以在环境变量`DEFAULT_DMODE`中设置`txt`或`epub`来自定义前端默认的下载模式
 ### 源码运行
+您在以源码运行前请一定记得添加环境变量  
+您可在项目目录下的logs内找到日志  
 ```shell
 git clone https://github.com/weiwei-cool/FanQieNovelDownloadOnWeb.git
 cd FanQieNovelDownloadOnWeb
@@ -24,6 +26,7 @@ python manage.py runserver 0.0.0.0:8000
 ### Docker运行
 
 如果您需要使用docker运行请使用以下命令  
+您可在容器的/app/logs内找到日志，您可自行添加映射  
 **重要提示：如果您的服务部署在ipv6上，请一定开启Docker的ipv6模式，并启动您服务器的ipv6转发！**  
 
 ```shell

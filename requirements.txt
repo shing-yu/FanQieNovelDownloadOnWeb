@@ -3,3 +3,4 @@ requests
 beautifulsoup4
 EbookLib
 webdav4
+loguru
