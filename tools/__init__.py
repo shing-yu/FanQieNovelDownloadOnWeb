@@ -2,7 +2,7 @@ import re
 from loguru import logger
 
 
-logger.add("fanqie_{time}.log", rotation="1 week", enqueue=True)
+logger.add("./logs/fanqie_{time}.log", rotation="1 week", enqueue=True)
 
 
 def rename(name):

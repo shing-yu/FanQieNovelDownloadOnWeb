@@ -44,7 +44,7 @@ class DownloadNovel(threading.Thread):
     def run(self) -> None:
         # 数据库中获取小说对象
         history_entry = History.objects.get(obid=self.fanqie.obid)
-        tools.logger.info(f'开始下载小说: {self.fanqie.__str__()}')
+        tools.logger.info(f'开始下载小说: \n{self.fanqie.__str__()}')
 
         # 判断下载模式
         if self.fanqie.mode == 'txt':
@@ -162,7 +162,7 @@ class DownloadNovel(threading.Thread):
                     tools.logger.info(f'《{self.fanqie.title}》已成功上传webdav服务器')
 
                 # 打印完成信息
-                tools.logger.info(f'已保存{self.fanqie.title}.txt 至本地')
+                tools.logger.info(f'已保存{self.fanqie.title}.txt至本地')
 
             except BaseException as e:
                 # 捕获所有异常，及时保存文件
@@ -370,7 +370,7 @@ class DownloadNovel(threading.Thread):
                                         overwrite=True)
                 tools.logger.info(f'《{self.fanqie.title}》已成功上传webdav服务器')
 
-            tools.logger.info(f'已保存{self.fanqie.title}.epub 至本地')
+            tools.logger.info(f'已保存{self.fanqie.title}.epub至本地')
 
     # 停止子进程函数
     def stop(self):
