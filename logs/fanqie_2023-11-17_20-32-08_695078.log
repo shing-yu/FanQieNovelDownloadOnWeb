@@ -1,0 +1,28 @@
+2023-11-17 20:32:31.062 | INFO     | Api.views:download:22 - 正在获取url数据……
+2023-11-17 20:32:31.066 | INFO     | Api.views:download:27 - 已获取urls为:['https://fanqienovel.com/page/7077757205910391838?enter_from=search']
+2023-11-17 20:32:31.067 | INFO     | Api.views:download:31 - 下载方式为epub
+2023-11-17 20:32:31.921 | INFO     | Api.views:<listcomp>:36 - 下载书籍:
+FanqieNovel: 中华人民共和国刑法
+author: 魏光朴
+2023-11-17 20:32:31.925 | WARNING  | Api.views:download:46 - 《中华人民共和国刑法》重复提交！
+2023-11-17 20:32:33.591 | INFO     | Api.views:history:90 - 查询正在任务中的小说：中华人民共和国刑法.epub(obid: 7077757205910391838-epub) 已下载 100.0%
+2023-11-17 20:32:36.607 | INFO     | Api.views:download:22 - 正在获取url数据……
+2023-11-17 20:32:36.607 | INFO     | Api.views:download:27 - 已获取urls为:['https://fanqienovel.com/page/7077757205910391838?enter_from=search']
+2023-11-17 20:32:36.607 | INFO     | Api.views:download:31 - 下载方式为epub
+2023-11-17 20:32:37.521 | INFO     | Api.views:<listcomp>:36 - 下载书籍:
+FanqieNovel: 中华人民共和国刑法
+author: 魏光朴
+2023-11-17 20:32:37.523 | INFO     | Api.views:download:50 - 《中华人民共和国刑法》未重复, 已返回：History matching query does not exist.
+2023-11-17 20:32:38.161 | INFO     | Api.views:download:58 - 《中华人民共和国刑法》已开始下载
+2023-11-17 20:32:38.168 | INFO     | tools.DownloadNovel:run:47 - 开始下载小说: 
+FanqieNovel: 中华人民共和国刑法
+author: 魏光朴
+2023-11-17 20:32:38.169 | INFO     | tools.DownloadNovel:run:183 - 正在以epub模式下载小说
+2023-11-17 20:32:38.750 | INFO     | tools.DownloadNovel:run:243 - 正在获取书封页共5章
+2023-11-17 20:32:39.926 | INFO     | tools.DownloadNovel:run:344 - 已获取 封面, 进度：20.0%
+2023-11-17 20:32:40.851 | INFO     | tools.DownloadNovel:run:344 - 已获取 版权信息, 进度：40.0%
+2023-11-17 20:32:41.729 | INFO     | tools.DownloadNovel:run:344 - 已获取 前言, 进度：60.0%
+2023-11-17 20:32:42.620 | INFO     | tools.DownloadNovel:run:344 - 已获取 第一编 总则, 进度：80.0%
+2023-11-17 20:32:43.761 | INFO     | tools.DownloadNovel:run:344 - 已获取 第二编 分则, 进度：100.0%
+2023-11-17 20:32:43.766 | INFO     | tools.DownloadNovel:run:373 - 已保存中华人民共和国刑法.epub至本地
+2023-11-17 20:32:43.961 | INFO     | Api.views:history:90 - 查询正在任务中的小说：中华人民共和国刑法.epub(obid: 7077757205910391838-epub) 已下载 100.0%
