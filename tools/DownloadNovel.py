@@ -323,7 +323,8 @@ class DownloadNovel(threading.Thread):
                         # 在小说内容字符串中添加章节标题和内容
                         text = epub.EpubHtml(title=chapter_title,
                                              file_name=f'chapter_{volume_id}_{chapter_id_name}.xhtml')
-                        text.content = chapter_text
+                        text.content = (f'<h2>{chapter_title}</h2>'
+                                        f'{chapter_text}')
 
                         toc_index = toc_index + (text,)
                         book.spine.append(text)
